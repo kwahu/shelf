@@ -6,11 +6,26 @@ public class ProductManipulator : MonoBehaviour
     private GameObject selectedProduct;
     List<GameObject> previousActiveSlots = null;
 
+    private GameObject objectBeingDragged = null;
+
+    GameObject panel;
+
+    void Start()
+    {
+        // Get the panel
+        panel = GameObject.Find("OccupiedPanel");
+    }
+
 void Update()
 {
     HandleMouseClick();
     MoveSelectedProductWithMouse();
     UpdateOccupiedPanel();
+
+    if (selectedProduct != null)
+        {
+            HighlightActiveSlot();
+        }
 }
 
 private void HandleMouseClick()
@@ -23,37 +38,26 @@ private void HandleMouseClick()
         }
         else
         {
-            PlaceProduct();
+            PlaceProductOnShelves();
         }
     }
 }
 
     private void UpdateOccupiedPanel()
     {
-        if (selectedProduct != null)
-        {
-            HighlightActiveSlot();
-
-            // Find OccupiedPanel GameObject
-            GameObject panel = GameObject.Find("OccupiedPanel");
-            PlacementRules.Instance.DrawIsOccupiedTable(panel);
-        }
+        PlacementRules.Instance.DrawIsOccupiedTable(panel);  
     }
 
 private void MoveSelectedProductWithMouse()
 {
     if (selectedProduct != null)
     {
-        Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
-        if (Physics.Raycast(ray, out RaycastHit hit))
-        {
-            Vector3 newPosition = hit.point;
-            newPosition.z = selectedProduct.transform.position.z;
-            selectedProduct.transform.position = newPosition;
-        }
+        Vector3 mousePosition = Input.mousePosition;
+        mousePosition.z = Camera.main.WorldToScreenPoint(selectedProduct.transform.position).z;
+        Vector3 newPosition = Camera.main.ScreenToWorldPoint(mousePosition);
+        selectedProduct.transform.position = newPosition;
     }
 }
-
 private void HighlightActiveSlot()
 {
     // Get all shelves
@@ -98,7 +102,7 @@ private void UnhighlightPreviousActiveSlots()
     }
 }
 
-    private void PlaceProduct()
+    private void PlaceProductOnShelves()
     {
         if (selectedProduct != null)
         {
@@ -107,15 +111,13 @@ private void UnhighlightPreviousActiveSlots()
 
             foreach (GameObject shelf in shelves)
             {
+
                 // Get the Shelf component from the shelf GameObject
                 Shelf shelfComponent = shelf.GetComponent<Shelf>();
 
                 // Check if the product can be placed on the shelf
                 if (shelfComponent.CanPlaceProduct(selectedProduct.GetComponent<Product>()))
                 {
-                    Debug.Log("Can place product");
-
-                    
                     // Place the product on the shelf
                     shelfComponent.PlaceProduct(selectedProduct.GetComponent<Product>());
 
@@ -123,8 +125,8 @@ private void UnhighlightPreviousActiveSlots()
                     selectedProduct.transform.parent = shelf.transform;
 
                     // snap the product to the position of the active slots include the product width offset
-                    
-                    selectedProduct.transform.position = previousActiveSlots[0].transform.position + new Vector3(selectedProduct.GetComponent<Product>().width / 30.0f, selectedProduct.GetComponent<Product>().height / 30.0f, 0);
+                    // and the slot height & width offset
+                    selectedProduct.transform.position = previousActiveSlots[0].transform.position - new Vector3(0.05f, 0.05f, 0);
 
                     // Unhighlight the previous active slots
                     UnhighlightPreviousActiveSlots();

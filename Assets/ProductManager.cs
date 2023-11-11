@@ -33,31 +33,38 @@ public void GenerateProducts()
 
     for (int i = 0; i < numProducts; i++)
     {
-        // Create a new cube primitive for each product
-        GameObject productModel = GameObject.CreatePrimitive(PrimitiveType.Cube);
-        productModel.name = "Product " + i;
+        // Create a new empty GameObject for each product
+        GameObject productParent = new GameObject();
+        productParent.name = "Product " + i;
 
-        // Add the Product component to the GameObject
-        Product product = productModel.AddComponent<Product>();
+        // Create a new cube primitive for the graphical asset
+        GameObject productModel = GameObject.CreatePrimitive(PrimitiveType.Cube);
+        // Remove the BoxCollider from the productModel
+        Destroy(productModel.GetComponent<BoxCollider>());
+        // Set the parent to the productParent
+        productModel.transform.parent = productParent.transform; 
+
+        // Add the Product component to the parent GameObject
+        Product product = productParent.AddComponent<Product>();
 
         product.productColor = colors[i % colors.Length]; // Use modulus to cycle through colors
         product.width = UnityEngine.Random.Range(1, 3); // Random value between 1 and 3
         product.height = UnityEngine.Random.Range(1, 3); // Random value between 1 and 2
 
         // Set the color of the primitive's material to a semi-transparent color
-        productModel.GetComponent<Renderer>().material = new Material(Shader.Find("Transparent/Diffuse"));
-        productModel.GetComponent<Renderer>().material.color = new Color(product.productColor.r, product.productColor.g, product.productColor.b, 0.5f);
+        productModel.GetComponent<Renderer>().material.color = new Color(product.productColor.r, product.productColor.g, product.productColor.b, 1f);
 
         // Set the scale of the primitive to match the product's width and height
         productModel.transform.localScale = new Vector3(product.width/10.0f, product.height/10.0f, 0.3f);
+        // Set the position of the productModel to the bottom left corner of the productParent
+        productModel.transform.localPosition = new Vector3(product.width/20.0f, product.height/20.0f, 0);
 
-        // Add a BoxCollider to the product
-        productModel.AddComponent<BoxCollider>();
-        // Add a Rigidbody to the product
-        //Rigidbody rb = productModel.AddComponent<Rigidbody>();
-        //rb.useGravity = false; // Disable gravity if you don't want the product to fall
+        // Add a BoxCollider to the parent product
+        BoxCollider boxCollider = productParent.AddComponent<BoxCollider>();
+        boxCollider.size = productModel.transform.localScale;
+        boxCollider.center = productModel.transform.localPosition;
 
-        productPrefabs.Add(productModel);
+        productPrefabs.Add(productParent);
     }
 }
 
@@ -116,13 +123,13 @@ private void PositionProductModelOnShelf(GameObject productModel, GameObject she
     float adjustedHeight = product.height / 10.0f;
 
     // Calculate the offset for the x and y positions based on the adjusted product's width and height
-    float xOffset = adjustedWidth / 2.0f;
-    float yOffset = adjustedHeight / 2.0f;
+    //float xOffset = adjustedWidth / 2.0f;
+    //float yOffset = adjustedHeight / 2.0f;
 
     // Set the position of the product model to the position of the shelf
     // Offset the x position by xPos and xOffset
     // Offset the y position by yOffset
-    productModel.transform.position = shelf.transform.position + new Vector3(xPos * 0.1f + xOffset, yOffset, 0);
+    productModel.transform.position = shelf.transform.position + new Vector3(xPos * 0.1f , 0.05f, 0);
 
     // Parent the product model to the shelf to keep the hierarchy organized
     productModel.transform.parent = shelf.transform;
@@ -134,7 +141,7 @@ private void PositionProductModelOnShelf(GameObject productModel, GameObject she
     int startSlot = xPos;
 
     // Increase xPos by the adjusted width of the product
-    xPos += productModel.GetComponent<Product>().width;
+    xPos += product.width;
 
        // Mark slots as occupied
     for (int i = startSlot; i < xPos; i++)

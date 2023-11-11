@@ -35,7 +35,8 @@ public class Shelf : MonoBehaviour
         GameObject slot = GameObject.CreatePrimitive(PrimitiveType.Cube);
         slot.name = "Slot " + index;
         slot.transform.localScale = new Vector3(0.1f, 0.1f, 0.1f);
-        slot.transform.position = transform.position + new Vector3(index * 0.1f, 0.1f, 0);
+        // Set the position of the slot and adjust it by helf the slot's width
+        slot.transform.position = transform.position + new Vector3(index * 0.1f + 0.05f, 0.1f, 0);
         slot.transform.parent = transform;
         SetSlotMaterial(slot);
 
@@ -52,65 +53,69 @@ public class Shelf : MonoBehaviour
         slotRenderer.material.color = new Color(1, 1, 1, 0.5f);
     }
 
+    int GetSlotIndex(Product product)
+    {
+        // Get the product's collider
+        Collider productCollider = product.GetComponent<Collider>();
+
+        foreach (GameObject slot in slots)
+        {
+            // Get the Slot and Collider components from the slot GameObject
+            Slot slotComponent = slot.GetComponent<Slot>();
+            Collider slotCollider = slot.GetComponent<Collider>();
+
+            // If the product's collider is intersecting with the slot's collider, return the slot's index
+            if (productCollider.bounds.Intersects(slotCollider.bounds))
+            {
+                return slots.IndexOf(slot);
+            }
+        }
+
+        // If the product is not colliding with any slot, return -1
+        return -1;
+    }
+
     public bool CanPlaceProduct(Product product)
     {
-        // Calculate the number of slots based on the product's width
-        int numberOfSlots = product.width;
+        // Get the index of the slot that the product is colliding with
+        int index = GetSlotIndex(product);
 
-        for (int i = 0; i < slots.Count; i++)
+        if (index == -1)
         {
-            // Check if the product can be placed in the current slot and the right amount of adjacent slots
-            if (CanPlaceInSlot(product, i, numberOfSlots))
-            {
-                return true;
-            }
+            // If the product is not colliding with any slot, it can't be placed
+            return false;
         }
 
-        // If the product is not colliding with any slots, it can't be placed
-        return false;
-    }
-
-    private bool CanPlaceInSlot(Product product, int slotIndex, int numberOfSlots)
-    {
-        GameObject slot = slots[slotIndex];
-
-        // Check if the product's collider is colliding with the slot's collider
-        if (product.GetComponent<Collider>().bounds.Intersects(slot.GetComponent<Collider>().bounds))
+        // Check the adjacent slots if the product's width is greater than 1
+        if (product.width > 1)
         {
-            // Get the Slot component from the slot GameObject
-            Slot slotComponent = slot.GetComponent<Slot>();
-
-            // If the slot is occupied, the product can't be placed
-            if (slotComponent.IsOccupied)
+            for (int i = 1; i < product.width; i++)
             {
-                return false;
-            }
-
-            // Check the right amount of adjacent slots
-            for (int j = 1; j < numberOfSlots; j++)
-            {
-                // If there are not enough adjacent slots, the product can't be placed
-                if (slotIndex + j >= slots.Count)
+                // Check if the slot at the current index plus the iteration is within the shelf's slots
+                if (index + i >= slots.Count)
                 {
+                  //  Debug.Log("Product is out of bounds");
                     return false;
                 }
 
-                // Get the Slot component from the adjacent slot GameObject
-                Slot adjacentSlotComponent = slots[slotIndex + j].GetComponent<Slot>();
+                // Get the Slot script attached to the slot
+                Slot slotScript = slots[index + i].GetComponent<Slot>();
 
-                // If the adjacent slot is occupied, the product can't be placed
-                if (adjacentSlotComponent.IsOccupied)
+                // Check if the slot at the current index plus the iteration is occupied
+                if (slotScript.IsOccupied)
                 {
+                 //   Debug.Log("Product is colliding with another product");
                     return false;
                 }
             }
-
-            // If the slot and the right amount of adjacent slots are free, the product can be placed
-            return true;
         }
 
-        return false;
+        // If none of the slots are occupied, the product can be placed
+      //  Debug.Log("Product can be placed");
+        return true;
     }
+
+
 
     public void PlaceProduct(Product product)
     {
@@ -133,6 +138,7 @@ public class Shelf : MonoBehaviour
 
     public List<GameObject> GetActiveSlots(Product product, int numberOfSlots)
     {
+        
         // Get the product's collider
         Collider productCollider = product.GetComponent<Collider>();
 
@@ -156,7 +162,6 @@ public class Shelf : MonoBehaviour
                 }
             }
         }
-
         // Return the active slots
         return activeSlots;
     }
