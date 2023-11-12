@@ -4,31 +4,39 @@ using UnityEngine;
 
 public class Slot : MonoBehaviour
 {
-    [SerializeField] public bool IsOccupied { get; private set; } = false;
+    private bool isOccupied = false;
     private Renderer slotRenderer;
+
+    private readonly Color highlightColor = new Color(0, 1, 0, 0.5f); // Semi-transparent green
+    private readonly Color unhighlightColor = new Color(1, 1, 1, 0.5f); // Semi-transparent white
+
+    public bool IsOccupied 
+    { 
+        get { return isOccupied; } 
+    }
 
     private void Awake()
     {
         slotRenderer = GetComponent<Renderer>();
     }
 
-    public void Occupy()
+    public void MarkAsOccupied()
     {
-        IsOccupied = true;
+        isOccupied = true;
     }
 
-    public void Free()
+    public void MarkAsUnoccupied()
     {
-        IsOccupied = false;
+        isOccupied = false;
     }
-public void Highlight()
-{
-    slotRenderer.material.color = new Color(0, 1, 0, 0.5f); // Semi-transparent green
-}
 
-public void Unhighlight()
-{
-    slotRenderer.material.color = new Color(1, 1, 1, 0.5f); // Semi-transparent white
-}
+    public void Highlight()
+    {
+        slotRenderer.material.color = highlightColor;
+    }
 
+    public void Unhighlight()
+    {
+        slotRenderer.material.color = unhighlightColor;
+    }
 }

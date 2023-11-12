@@ -55,7 +55,9 @@ public void GenerateProducts()
         productModel.GetComponent<Renderer>().material.color = new Color(product.productColor.r, product.productColor.g, product.productColor.b, 1f);
 
         // Set the scale of the primitive to match the product's width and height
-        productModel.transform.localScale = new Vector3(product.width/10.0f, product.height/10.0f, 0.3f);
+        productModel.transform.localScale = new Vector3(product.width/10.0f, product.height/10.0f, 0.3f)*0.8f;
+        //shrink model by 20%
+
         // Set the position of the productModel to the bottom left corner of the productParent
         productModel.transform.localPosition = new Vector3(product.width/20.0f, product.height/20.0f, 0);
 
@@ -149,7 +151,7 @@ private void PositionProductModelOnShelf(GameObject productModel, GameObject she
         Slot slot = shelfComponent.GetSlotAtPosition(i).GetComponent<Slot>();
         if (slot != null)
         {
-            slot.Occupy();
+            slot.MarkAsOccupied();
         }
     }
 }

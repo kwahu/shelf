@@ -61,8 +61,8 @@ private void InstantiateShelves()
 
         // Add the Shelf component to the shelf GameObject
         Shelf shelfComponent = shelf.AddComponent<Shelf>();
-        shelfComponent.shelfWidth = shelfWidth; // Set the shelf width
-        shelfComponent.InitializeSlots();
+        shelfComponent.ShelfWidth = shelfWidth; // Set the shelf width
+        shelfComponent.CreateAndInitializeSlots();
 
         // Create shelf geometry
         CreateShelfPart(shelf, new Vector3(0+shelfWidth/2, 0, 0));

@@ -45,7 +45,7 @@ private void HandleMouseClick()
 
     private void UpdateOccupiedPanel()
     {
-        PlacementRules.Instance.DrawIsOccupiedTable(panel);  
+       PlacementRules.Instance.DrawIsOccupiedTable(panel);  
     }
 
 private void MoveSelectedProductWithMouse()

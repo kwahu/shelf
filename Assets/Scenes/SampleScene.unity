@@ -231,8 +231,8 @@ MonoBehaviour:
   shelfWidth: 1.5
   shelfDepth: 0.3
   shelfHeight: 0.4
-  minProductsPerShelf: 5
-  maxProductsPerShelf: 9
+  minProductsPerShelf: 6
+  maxProductsPerShelf: 7
 --- !u!4 &215847441
 Transform:
   m_ObjectHideFlags: 0
@@ -705,7 +705,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   productPrefabs: []
-  numProducts: 35
+  numProducts: 40
 --- !u!4 &2121869786
 Transform:
   m_ObjectHideFlags: 0

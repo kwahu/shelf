@@ -1,11 +1,23 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+
 public class Shelf : MonoBehaviour
 {
-    public float shelfWidth;
+    private float shelfWidth;
+    public float ShelfWidth 
+    { 
+        get { return shelfWidth; } 
+        set { shelfWidth = value; } 
+    }
 
     [SerializeField] private List<GameObject> slots;
+
+    private const float SlotWidth = 0.1f;
+    private const float SlotScale = 0.1f;
+    private const float SlotPositionAdjustment = 0.05f;
+
+      private readonly Color slotColor = new Color(1, 1, 1, 0.5f); // Semi-transparent white
 
 
     public List<GameObject> GetSlots()
@@ -13,7 +25,7 @@ public class Shelf : MonoBehaviour
         return slots;
     }
     
-    public void InitializeSlots()
+    public void CreateAndInitializeSlots()
     {
         int slotCount = CalculateSlotCount();
         slots = new List<GameObject>(slotCount);
@@ -27,33 +39,35 @@ public class Shelf : MonoBehaviour
 
     private int CalculateSlotCount()
     {
-        return (int)(shelfWidth / 0.1f);
+        return (int)(shelfWidth / SlotWidth);
     }
+
 
     private GameObject CreateSlot(int index)
     {
-        GameObject slot = GameObject.CreatePrimitive(PrimitiveType.Cube);
-        slot.name = "Slot " + index;
-        slot.transform.localScale = new Vector3(0.1f, 0.1f, 0.1f);
-        // Set the position of the slot and adjust it by helf the slot's width
-        slot.transform.position = transform.position + new Vector3(index * 0.1f + 0.05f, 0.1f, 0);
-        slot.transform.parent = transform;
-        SetSlotMaterial(slot);
+        GameObject newSlot = GameObject.CreatePrimitive(PrimitiveType.Cube);
+        newSlot.name = "Slot " + index;
+        newSlot.transform.localScale = new Vector3(SlotScale, SlotScale, SlotScale);
+        // Set the position of the slot and adjust it by half the slot's width
+        newSlot.transform.position = transform.position + new Vector3(index * SlotScale + SlotPositionAdjustment, SlotScale, 0);
+        newSlot.transform.parent = transform;
+        SetSlotMaterial(newSlot);
 
         // Add a Slot component to the slot
-        slot.AddComponent<Slot>();
+        newSlot.AddComponent<Slot>();
 
-        return slot;
+        return newSlot;
     }
+  
 
     private void SetSlotMaterial(GameObject slot)
     {
         Renderer slotRenderer = slot.GetComponent<Renderer>();
         slotRenderer.material = new Material(Shader.Find("Transparent/Diffuse"));
-        slotRenderer.material.color = new Color(1, 1, 1, 0.5f);
+        slotRenderer.material.color = slotColor;
     }
 
-    int GetSlotIndex(Product product)
+    int GetCollidingSlotIndex(Product product)
     {
         // Get the product's collider
         Collider productCollider = product.GetComponent<Collider>();
@@ -78,7 +92,7 @@ public class Shelf : MonoBehaviour
     public bool CanPlaceProduct(Product product)
     {
         // Get the index of the slot that the product is colliding with
-        int index = GetSlotIndex(product);
+        int index = GetCollidingSlotIndex(product);
 
         if (index == -1)
         {
@@ -86,15 +100,13 @@ public class Shelf : MonoBehaviour
             return false;
         }
 
-        // Check the adjacent slots if the product's width is greater than 1
-        if (product.width > 1)
+        // Check the adjacent slots to see if they are occupied
         {
-            for (int i = 1; i < product.width; i++)
+            for (int i = 0; i < product.width; i++)
             {
                 // Check if the slot at the current index plus the iteration is within the shelf's slots
                 if (index + i >= slots.Count)
                 {
-                  //  Debug.Log("Product is out of bounds");
                     return false;
                 }
 
@@ -104,14 +116,12 @@ public class Shelf : MonoBehaviour
                 // Check if the slot at the current index plus the iteration is occupied
                 if (slotScript.IsOccupied)
                 {
-                 //   Debug.Log("Product is colliding with another product");
                     return false;
                 }
             }
         }
 
         // If none of the slots are occupied, the product can be placed
-      //  Debug.Log("Product can be placed");
         return true;
     }
 
@@ -132,7 +142,7 @@ public class Shelf : MonoBehaviour
 
             // Get the Slot component from the slot GameObject and call its Occupy method
             Slot slotComponent = slot.GetComponent<Slot>();
-            slotComponent.Occupy();
+            slotComponent.MarkAsOccupied();
         }
     }
 
@@ -191,7 +201,7 @@ public void FreeUpSlots(Product product)
         // If the product's collider is intersecting with the slot's collider, call the Free method of the Slot component
         if (productCollider.bounds.Intersects(slotCollider.bounds))
         {
-            slotComponent.Free();
+            slotComponent.MarkAsUnoccupied();
         }
     }
 }
