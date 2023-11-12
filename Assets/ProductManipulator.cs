@@ -39,6 +39,9 @@ private void HandleMouseClick()
         else
         {
             PlaceProductOnShelves();
+            //invoke CheckAllColors()
+            PlacementRules.Instance.CheckAllColors();
+
         }
     }
 }

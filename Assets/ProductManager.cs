@@ -29,8 +29,6 @@ public class ProductManager : MonoBehaviour
 
 public void GenerateProducts()
 {
-    Color[] colors = { Color.red, Color.green, Color.blue };
-
     for (int i = 0; i < numProducts; i++)
     {
         // Create a new empty GameObject for each product
@@ -47,12 +45,14 @@ public void GenerateProducts()
         // Add the Product component to the parent GameObject
         Product product = productParent.AddComponent<Product>();
 
-        product.productColor = colors[i % colors.Length]; // Use modulus to cycle through colors
+        product.category = Product.Categories[i % Product.Categories.Count]; // Use modulus to cycle through categories
         product.width = UnityEngine.Random.Range(1, 3); // Random value between 1 and 3
         product.height = UnityEngine.Random.Range(1, 3); // Random value between 1 and 2
 
-        // Set the color of the primitive's material to a semi-transparent color
-        productModel.GetComponent<Renderer>().material.color = new Color(product.productColor.r, product.productColor.g, product.productColor.b, 1f);
+        // Set the color of the primitive's material based on the category
+        Color color = Product.GetColorOfCategory(product.category);
+        productModel.GetComponent<Renderer>().material.color = new Color(color.r, color.g, color.b, 1f);
+
 
         // Set the scale of the primitive to match the product's width and height
         productModel.transform.localScale = new Vector3(product.width/10.0f, product.height/10.0f, 0.3f)*0.8f;
@@ -69,7 +69,6 @@ public void GenerateProducts()
         productPrefabs.Add(productParent);
     }
 }
-
 private GameObject GetRandomProduct(List<GameObject> productPrefabsCopy)
 {
     // Get a random index
@@ -124,10 +123,6 @@ private void PositionProductModelOnShelf(GameObject productModel, GameObject she
     float adjustedWidth = product.width / 10.0f;
     float adjustedHeight = product.height / 10.0f;
 
-    // Calculate the offset for the x and y positions based on the adjusted product's width and height
-    //float xOffset = adjustedWidth / 2.0f;
-    //float yOffset = adjustedHeight / 2.0f;
-
     // Set the position of the product model to the position of the shelf
     // Offset the x position by xPos and xOffset
     // Offset the y position by yOffset
@@ -145,13 +140,14 @@ private void PositionProductModelOnShelf(GameObject productModel, GameObject she
     // Increase xPos by the adjusted width of the product
     xPos += product.width;
 
-       // Mark slots as occupied
+    // Mark slots as occupied and set the Product reference
     for (int i = startSlot; i < xPos; i++)
     {
         Slot slot = shelfComponent.GetSlotAtPosition(i).GetComponent<Slot>();
         if (slot != null)
         {
             slot.MarkAsOccupied();
+            slot.Category = product.category; // Set the category in the Slot
         }
     }
 }

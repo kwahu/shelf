@@ -140,9 +140,12 @@ public class Shelf : MonoBehaviour
             // If the product is colliding with a slot, occupy the slot
             slot.GetComponent<Renderer>().material.color = new Color(1, 0, 0, 0.5f);
 
-            // Get the Slot component from the slot GameObject and call its Occupy method
+            // Get the Slot component from the slot GameObject and call its MarkAsOccupied method
             Slot slotComponent = slot.GetComponent<Slot>();
             slotComponent.MarkAsOccupied();
+
+            // Set the Category in the Slot
+            slotComponent.Category = product.category;
         }
     }
 
@@ -202,6 +205,7 @@ public void FreeUpSlots(Product product)
         if (productCollider.bounds.Intersects(slotCollider.bounds))
         {
             slotComponent.MarkAsUnoccupied();
+            slotComponent.Category = null; // Clear the category in the Slot
         }
     }
 }

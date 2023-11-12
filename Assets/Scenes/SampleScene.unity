@@ -705,7 +705,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   productPrefabs: []
-  numProducts: 40
+  numProducts: 36
 --- !u!4 &2121869786
 Transform:
   m_ObjectHideFlags: 0
